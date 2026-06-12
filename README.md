@@ -50,7 +50,7 @@ Create the D1 database in your Cloudflare account:
 npx wrangler d1 create portfolio-db
 ```
 
-Copy the returned database ID into `wrangler.jsonc` under the `PORTFOLIO_DB` binding. The placeholder ID is kept so local development remains clear and explicit.
+Copy the returned database ID into `wrangler.jsonc` under the `portfolio_db` binding.
 
 Apply migrations locally:
 

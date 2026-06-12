@@ -11,7 +11,7 @@ import {
 import { parseDomainInput, parsePlacementInput, parseProjectInput } from "./validation";
 
 type Env = {
-  PORTFOLIO_DB: D1Database;
+  portfolio_db: D1Database;
   ASSETS: Fetcher;
   ENVIRONMENT?: string;
 };
@@ -50,18 +50,18 @@ function hasAccess(request: Request, env: Env) {
 
 async function handlePublicApi(request: Request, env: Env, pathname: string) {
   try {
-    if (pathname === "/api/portfolio") return json(await getPortfolio(env.PORTFOLIO_DB));
+    if (pathname === "/api/portfolio") return json(await getPortfolio(env.portfolio_db));
     if (pathname === "/api/domains") {
-      const portfolio = await getPortfolio(env.PORTFOLIO_DB);
+      const portfolio = await getPortfolio(env.portfolio_db);
       return json(portfolio.domains);
     }
     if (pathname === "/api/projects") {
-      const portfolio = await getPortfolio(env.PORTFOLIO_DB);
+      const portfolio = await getPortfolio(env.portfolio_db);
       return json(portfolio.projects);
     }
     if (pathname.startsWith("/api/projects/")) {
       const slug = decodeURIComponent(pathname.replace("/api/projects/", ""));
-      const project = await getProjectBySlug(env.PORTFOLIO_DB, slug);
+      const project = await getProjectBySlug(env.portfolio_db, slug);
       return project ? json(project) : notFound();
     }
   } catch {
@@ -79,33 +79,33 @@ async function handleAdminApi(request: Request, env: Env, pathname: string) {
 
   try {
     if (request.method === "GET" && pathname === "/api/admin/portfolio") {
-      return json(await getPortfolio(env.PORTFOLIO_DB, { includePrivate: true }));
+      return json(await getPortfolio(env.portfolio_db, { includePrivate: true }));
     }
     if (request.method === "POST" && pathname === "/api/admin/domains") {
-      return json(await upsertDomain(env.PORTFOLIO_DB, parseDomainInput(await readJson(request))));
+      return json(await upsertDomain(env.portfolio_db, parseDomainInput(await readJson(request))));
     }
     if (request.method === "PUT" && pathname.startsWith("/api/admin/domains/")) {
       const id = decodeURIComponent(pathname.replace("/api/admin/domains/", ""));
       const input = parseDomainInput(await readJson(request));
-      return json(await upsertDomain(env.PORTFOLIO_DB, { ...input, id }));
+      return json(await upsertDomain(env.portfolio_db, { ...input, id }));
     }
     if (request.method === "POST" && pathname === "/api/admin/projects") {
-      return json(await upsertProject(env.PORTFOLIO_DB, parseProjectInput(await readJson(request))));
+      return json(await upsertProject(env.portfolio_db, parseProjectInput(await readJson(request))));
     }
     if (request.method === "PUT" && pathname.startsWith("/api/admin/projects/")) {
       const id = decodeURIComponent(pathname.replace("/api/admin/projects/", ""));
       const input = parseProjectInput(await readJson(request));
-      return json(await upsertProject(env.PORTFOLIO_DB, { ...input, id }));
+      return json(await upsertProject(env.portfolio_db, { ...input, id }));
     }
     if (request.method === "DELETE" && pathname.startsWith("/api/admin/projects/")) {
       const id = decodeURIComponent(pathname.replace("/api/admin/projects/", ""));
-      return json(await softDisableProject(env.PORTFOLIO_DB, id));
+      return json(await softDisableProject(env.portfolio_db, id));
     }
     if (request.method === "PUT" && pathname === "/api/admin/placements") {
-      return json(await putPlacement(env.PORTFOLIO_DB, parsePlacementInput(await readJson(request))));
+      return json(await putPlacement(env.portfolio_db, parsePlacementInput(await readJson(request))));
     }
     if (request.method === "POST" && pathname === "/api/admin/seed") {
-      return json(await seedDatabase(env.PORTFOLIO_DB));
+      return json(await seedDatabase(env.portfolio_db));
     }
   } catch (error) {
     return json(
