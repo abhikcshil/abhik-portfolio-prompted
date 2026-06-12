@@ -1,36 +1,136 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Abhik C. Shil Portfolio
 
-## Getting Started
+Cloudflare-native personal portfolio for Abhik C. Shil, built as an interactive solar-system interface. Domains are planets, projects are moons, and admin editing is designed to sit behind Cloudflare Access.
 
-First, run the development server:
+Target domain: `portfolio.acsstudios.co`
+
+## Stack
+
+- React + Vite + TypeScript
+- Tailwind CSS plus custom global CSS
+- Cloudflare Workers for API and app serving
+- Cloudflare D1 using direct prepared statements
+- Static TypeScript fallback data in `src/data/portfolio.ts`
+
+This branch intentionally removes the old Render/PostgreSQL/Prisma/Next.js path.
+
+## Local Development
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Build the Vite app:
+
+```bash
+npm run build
+```
+
+Run the Worker locally with static assets and API routes:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:8787`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+For frontend-only UI iteration:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev:vite
+```
 
-## Learn More
+## D1 Setup
 
-To learn more about Next.js, take a look at the following resources:
+Create the D1 database in your Cloudflare account:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npx wrangler d1 create portfolio-db
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Copy the returned database ID into `wrangler.jsonc` under the `PORTFOLIO_DB` binding. The placeholder ID is kept so local development remains clear and explicit.
 
-## Deploy on Vercel
+Apply migrations locally:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run db:migrate:local
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Seed local data:
+
+```bash
+npm run db:seed:local
+```
+
+Apply migrations remotely:
+
+```bash
+npm run db:migrate:remote
+```
+
+Seed remote data either with the SQL file:
+
+```bash
+npx wrangler d1 execute portfolio-db --remote --file ./migrations/0002_seed.sql
+```
+
+or by calling `POST /api/admin/seed` after deploying and protecting admin routes.
+
+## API Routes
+
+Public routes:
+
+- `GET /api/portfolio`
+- `GET /api/domains`
+- `GET /api/projects`
+- `GET /api/projects/:slug`
+
+Admin routes:
+
+- `GET /api/admin/portfolio`
+- `POST /api/admin/domains`
+- `PUT /api/admin/domains/:id`
+- `POST /api/admin/projects`
+- `PUT /api/admin/projects/:id`
+- `DELETE /api/admin/projects/:id`
+- `PUT /api/admin/placements`
+- `POST /api/admin/seed`
+
+Public helpers filter out draft, private, archived, and disabled content. Admin helpers can read all content.
+
+## Cloudflare Access
+
+Protect these paths with Cloudflare Access:
+
+- `portfolio.acsstudios.co/admin*`
+- `portfolio.acsstudios.co/api/admin*`
+
+Leave these public:
+
+- `portfolio.acsstudios.co/`
+- `portfolio.acsstudios.co/project/*`
+- `portfolio.acsstudios.co/api/portfolio`
+- `portfolio.acsstudios.co/api/domains`
+- `portfolio.acsstudios.co/api/projects*`
+
+Create a self-hosted Access application in Cloudflare Zero Trust for `portfolio.acsstudios.co`, then add path policies for `/admin*` and `/api/admin*`. The Worker also checks for common Cloudflare Access headers outside local development, but Cloudflare Access is the primary security boundary.
+
+## Deploy
+
+Build and deploy:
+
+```bash
+npm run deploy
+```
+
+Attach `portfolio.acsstudios.co` to the Worker route in Cloudflare after deployment.
+
+## ACS Studios
+
+This portfolio is part of the ACS Studios ecosystem and should eventually be listed in the ACS Studios Pages Registry as:
+
+- Portfolio
+- `portfolio.acsstudios.co`
+- Active or Building
