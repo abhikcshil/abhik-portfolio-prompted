@@ -10,7 +10,7 @@ Target domain: `portfolio.acsstudios.co`
 - Tailwind CSS plus custom global CSS
 - Cloudflare Workers for API and app serving
 - Cloudflare D1 using direct prepared statements
-- Static TypeScript fallback data in `src/data/portfolio.ts`
+- Static fallback data in `src/data/legacy-portfolio.json`, shared by the UI and importer
 
 This branch intentionally removes the old Render/PostgreSQL/Prisma/Next.js path.
 
@@ -58,7 +58,7 @@ Apply migrations locally:
 npm run db:migrate:local
 ```
 
-Seed local data:
+Import the legacy portfolio data locally:
 
 ```bash
 npm run db:seed:local
@@ -70,13 +70,23 @@ Apply migrations remotely:
 npm run db:migrate:remote
 ```
 
-Seed remote data either with the SQL file:
+Import the legacy portfolio data remotely:
 
 ```bash
-npx wrangler d1 execute portfolio-db --remote --file ./migrations/0002_seed.sql
+npm run db:seed:remote
 ```
 
-or by calling `POST /api/admin/seed` after deploying and protecting admin routes.
+The importer reads `src/data/legacy-portfolio.json`, generates temporary SQL, and
+upserts records by stable slug. It replaces child records only for the 20 imported
+projects, so repeated runs do not duplicate placements, tech stack entries,
+highlights, links, visuals, or sections. It never hardcodes the remote D1 database
+ID; Wrangler resolves `portfolio-db` through `wrangler.jsonc`.
+
+The normalized source was extracted from the database-backed public payload at
+`https://abhik-portfolio-pski.onrender.com/`. It contains 4 domains and 20 projects.
+The three placeholder projects from the initial Cloudflare rebase are disabled by
+the importer. You can also run the same upsert through `POST /api/admin/seed` after
+deploying and protecting the admin routes.
 
 ## API Routes
 

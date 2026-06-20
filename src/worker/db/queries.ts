@@ -157,6 +157,11 @@ export async function getProjectBySlug(
   slug: string,
   options?: { includePrivate?: boolean },
 ) {
+  if (!options?.includePrivate) {
+    const portfolio = await getPortfolio(db);
+    return portfolio.projects.find((project) => project.slug === slug) ?? null;
+  }
+
   const row = await db
     .prepare("SELECT * FROM projects WHERE slug = ?")
     .bind(slug)
@@ -165,10 +170,7 @@ export async function getProjectBySlug(
   if (!row) return null;
   const [project] = await hydrateProjects(db, [row]);
   if (!project) return null;
-  if (options?.includePrivate) return project;
-
-  const isPublic = project.enabled && !project.archived && project.visibility === "public";
-  return isPublic ? project : null;
+  return project;
 }
 
 async function hydrateProjects(db: D1Database, rows: ProjectRow[]) {
@@ -505,6 +507,13 @@ export async function seedDatabase(db: D1Database): Promise<PortfolioPayload> {
   for (const project of fallbackProjects) {
     await upsertProject(db, project);
   }
+  await db
+    .prepare(
+      `UPDATE projects SET enabled = 0, updated_at = ?
+       WHERE slug IN ('orbital-portfolio', 'acs-studios-registry', 'signal-sketches')`,
+    )
+    .bind(now())
+    .run();
   return getPortfolio(db, { includePrivate: true });
 }
 

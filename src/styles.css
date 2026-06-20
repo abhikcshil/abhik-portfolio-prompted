@@ -167,7 +167,7 @@ button.sun {
   color: rgb(248 250 252 / 0.92);
   font-family: "Exo 2", system-ui, sans-serif;
   font-size: 0.82rem;
-  transform: rotate(calc((var(--angle) * -1)));
+  animation: label-counter-spin var(--duration) linear infinite;
 }
 
 .planet-orbit:hover .planet,
@@ -514,6 +514,15 @@ button.sun {
   }
 }
 
+@keyframes label-counter-spin {
+  from {
+    transform: rotate(calc(0deg - var(--angle)));
+  }
+  to {
+    transform: rotate(calc(-360deg - var(--angle)));
+  }
+}
+
 @media (max-width: 820px) {
   .identity {
     left: 18px;
@@ -555,8 +564,15 @@ button.sun {
   }
 
   .planet-orbit,
-  .moon-orbit {
+  .moon-orbit,
+  .orbital-label,
+  .moon-label {
     animation: none;
+  }
+
+  .orbital-label,
+  .moon-label {
+    transform: rotate(calc(0deg - var(--angle)));
   }
 
   .motion-trail {

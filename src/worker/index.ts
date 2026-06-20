@@ -66,6 +66,11 @@ async function handlePublicApi(request: Request, env: Env, pathname: string) {
     }
   } catch {
     if (pathname === "/api/portfolio") return json(fallbackPublicPortfolio());
+    if (pathname.startsWith("/api/projects/")) {
+      const slug = decodeURIComponent(pathname.replace("/api/projects/", ""));
+      const project = fallbackPublicPortfolio().projects.find((item) => item.slug === slug);
+      return project ? json(project) : notFound();
+    }
     return json({ error: "Portfolio data is temporarily unavailable." }, { status: 503 });
   }
 
