@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import type { PortfolioDomain, PortfolioPayload, PortfolioProject } from "../data/portfolio";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  fallbackPortfolio,
+  type PortfolioDomain,
+  type PortfolioPayload,
+  type PortfolioProject,
+} from "../data/portfolio";
 import { loadPublicPortfolio } from "./api";
 import { domainAngle, projectAngle, projectOrder } from "./orbits";
 
@@ -9,8 +14,10 @@ export function Home() {
   const [focused, setFocused] = useState<PortfolioDomain | null>(null);
   const [isExiting, setIsExiting] = useState(false);
   const [isReturning, setIsReturning] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   const transitionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reducedMotion = useReducedMotion();
+  const focusSlug = searchParams.get("focus");
 
   useEffect(() => {
     let active = true;
@@ -21,6 +28,16 @@ export function Home() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!portfolio) return;
+    if (!focusSlug) {
+      if (!isExiting) setFocused(null);
+      return;
+    }
+    const domain = portfolio.domains.find((item) => item.slug === focusSlug);
+    if (domain) setFocused(domain);
+  }, [focusSlug, isExiting, portfolio]);
 
   useEffect(() => () => {
     if (transitionTimer.current) clearTimeout(transitionTimer.current);
@@ -51,18 +68,31 @@ export function Home() {
 
   return (
     <main className={`space-page ${focused ? "is-focused" : ""}`}>
-      <div className="stars" />
-      <div className="identity">Abhik C. Shil | Interactive Portfolio.</div>
-      <div className="watermark">ABHIK</div>
+      <div className="stars" aria-hidden="true" />
+      <header className="identity">
+        <strong>Abhik C. Shil | Interactive Portfolio</strong>
+        <span>Select a planet to explore projects.</span>
+      </header>
+      <IdentityWatermark words={portfolio.identityWords ?? fallbackPortfolio.identityWords ?? []} />
 
       {!focused ? (
         <section
           className={`system-stage scene-camera ${isReturning ? "is-returning" : ""}`}
           aria-label="Portfolio domains"
         >
-          <button className="sun" type="button" aria-label="Abhik C. Shil">
+          <a
+            className="sun"
+            href="https://acsstudios.co"
+            aria-label="Visit ACS Studios"
+            onKeyDown={(event) => {
+              if (event.key === " ") {
+                event.preventDefault();
+                event.currentTarget.click();
+              }
+            }}
+          >
             Abhik
-          </button>
+          </a>
           {portfolio.domains.map((domain) => {
             const angle = domainAngle(domain);
             const orbitScale = 0.36 + domain.orbitOrder * 0.16;
@@ -74,6 +104,7 @@ export function Home() {
                 onClick={() => {
                   setFocused(domain);
                   setIsReturning(false);
+                  setSearchParams({ focus: domain.slug });
                 }}
                 style={
                   {
@@ -87,7 +118,7 @@ export function Home() {
                 aria-label={`Focus ${domain.name}`}
               >
                 <span className="orbit-ring" />
-                <span className="motion-trail" />
+                <span className="arc-trail" />
                 <span className="planet" />
                 <span className="orbital-label">{domain.label}</span>
               </button>
@@ -104,6 +135,7 @@ export function Home() {
             if (reducedMotion) {
               setFocused(null);
               setIsReturning(true);
+              setSearchParams({});
               return;
             }
             setIsExiting(true);
@@ -111,6 +143,7 @@ export function Home() {
               setFocused(null);
               setIsExiting(false);
               setIsReturning(true);
+              setSearchParams({});
             }, 420);
           }}
         />
@@ -138,7 +171,7 @@ function FocusedDomain({
 
   function activateProject(project: PortfolioProject) {
     if (selectedSlug === project.slug) {
-      navigate(`/project/${project.slug}`);
+      navigate(`/project/${project.slug}?from=${encodeURIComponent(domain.slug)}`);
       return;
     }
     setSelectedSlug(project.slug);
@@ -171,7 +204,7 @@ function FocusedDomain({
             <button
               key={project.slug}
               type="button"
-              className={`moon-orbit ${isSelected ? "is-selected" : ""}`}
+              className={`moon-orbit ${order % 2 === 0 ? "callout-down" : ""} ${isSelected ? "is-selected" : ""}`}
               onClick={() => activateProject(project)}
               onMouseEnter={() => setPreview(project)}
               onFocus={() => setPreview(project)}
@@ -187,8 +220,9 @@ function FocusedDomain({
               aria-label={`${project.title}. ${isSelected ? "Selected; activate again to open the full project." : "Activate to preview."}`}
               aria-pressed={isSelected}
             >
-              <span className="motion-trail moon-trail" />
+              <span className="arc-trail moon-arc-trail" />
               <span className="moon" />
+              <span className="moon-connector" aria-hidden="true" />
               <span className="moon-label">{project.title}</span>
             </button>
           );
@@ -236,7 +270,9 @@ function ProjectPreview({
                 {project.highlights.slice(0, 2).map((item) => <li key={item}>{item}</li>)}
               </ul>
             )}
-            <Link className="preview-cta" to={`/project/${project.slug}`}>View Full Project</Link>
+            <Link className="preview-cta" to={`/project/${project.slug}?from=${encodeURIComponent(domain.slug)}`}>
+              View Full Project
+            </Link>
             <small>
               {selected
                 ? "Selected. Select this moon again to open the full project."
@@ -261,6 +297,26 @@ function PreviewPlaceholder({ title }: { title: string }) {
       <span />
       <span />
       <strong>{title}</strong>
+    </div>
+  );
+}
+
+function IdentityWatermark({ words }: { words: string[] }) {
+  return (
+    <div className="watermark" aria-hidden="true">
+      {words.map((word, index) => (
+        <span
+          key={word}
+          style={
+            {
+              "--word-duration": `${words.length * 8}s`,
+              "--word-delay": `${index * 8}s`,
+            } as React.CSSProperties
+          }
+        >
+          {word === "SYSTEMS BUILDER" ? <>SYSTEMS<br />BUILDER</> : word}
+        </span>
+      ))}
     </div>
   );
 }

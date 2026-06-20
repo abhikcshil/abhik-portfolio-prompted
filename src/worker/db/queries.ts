@@ -147,7 +147,7 @@ export async function getPortfolio(db: D1Database, options?: { includePrivate?: 
 
   const domains = domainsResult.results.map(domainFromRow);
   const projects = await hydrateProjects(db, projectsResult.results);
-  const payload = { domains, projects };
+  const payload = { domains, projects, identityWords: fallbackPortfolio.identityWords };
 
   return options?.includePrivate ? payload : publicPortfolio(payload);
 }

@@ -1,4 +1,5 @@
 {
+  "identityWords": ["CREATIVE", "SYSTEMS BUILDER", "ENGINEER"],
   "domains": [
     { "id": "domain-software", "slug": "software", "name": "Software", "label": "Software", "description": "Applications, interfaces, systems design, and product engineering work.", "colorKey": "software", "colorPrimary": "#38bdf8", "colorSecondary": "#0ea5e9", "orbitOrder": 1, "enabled": true, "visibility": "public" },
     { "id": "domain-hardware", "slug": "hardware", "name": "Hardware", "label": "Hardware", "description": "Embedded systems, physical builds, instrumentation, and device workflows.", "colorKey": "hardware", "colorPrimary": "#14b8a6", "colorSecondary": "#0f766e", "orbitOrder": 2, "enabled": true, "visibility": "public" },

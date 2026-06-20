@@ -68,6 +68,7 @@ export type PortfolioProject = {
 export type PortfolioPayload = {
   domains: PortfolioDomain[];
   projects: PortfolioProject[];
+  identityWords?: string[];
 };
 
 export const fallbackDomains = legacyPortfolio.domains as PortfolioDomain[];
@@ -77,6 +78,7 @@ export const fallbackProjects = legacyPortfolio.projects as PortfolioProject[];
 export const fallbackPortfolio: PortfolioPayload = {
   domains: fallbackDomains,
   projects: fallbackProjects,
+  identityWords: legacyPortfolio.identityWords,
 };
 
 export function publicPortfolio(data: PortfolioPayload): PortfolioPayload {
@@ -99,5 +101,5 @@ export function publicPortfolio(data: PortfolioPayload): PortfolioPayload {
       ),
     }));
 
-  return { domains: publicDomains, projects: publicProjects };
+  return { domains: publicDomains, projects: publicProjects, identityWords: data.identityWords };
 }

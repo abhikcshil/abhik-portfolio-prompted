@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import type { PortfolioProject } from "../data/portfolio";
 import { loadPublicProject } from "./api";
 
 export function ProjectDetail() {
   const { slug = "" } = useParams();
+  const [searchParams] = useSearchParams();
   const [project, setProject] = useState<PortfolioProject | null | undefined>();
 
   useEffect(() => {
@@ -27,9 +28,17 @@ export function ProjectDetail() {
     );
   }
 
+  const requestedDomain = searchParams.get("from");
+  const returnDomain = project.placements.some(
+    (placement) => placement.domainSlug === requestedDomain,
+  )
+    ? requestedDomain
+    : project.placements[0]?.domainSlug;
+  const orbitHref = returnDomain ? `/?focus=${encodeURIComponent(returnDomain)}` : "/";
+
   return (
     <main className="detail-page">
-      <Link to="/">Back to orbit</Link>
+      <Link to={orbitHref}>Back to orbit</Link>
       <p>{project.status}</p>
       <h1>{project.title}</h1>
       <h2>{project.shortDescription}</h2>

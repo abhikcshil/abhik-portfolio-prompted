@@ -42,37 +42,102 @@ a {
   position: absolute;
   inset: 0;
   background-image:
-    radial-gradient(circle, rgb(255 255 255 / 0.72) 0 1px, transparent 1px),
-    radial-gradient(circle, rgb(125 211 252 / 0.55) 0 1px, transparent 1px);
-  background-position:
-    0 0,
-    28px 42px;
-  background-size:
-    90px 90px,
-    140px 140px;
-  opacity: 0.35;
+    radial-gradient(circle at 7% 14%, rgb(255 255 255 / 0.82) 0 1px, transparent 1.6px),
+    radial-gradient(circle at 18% 72%, rgb(125 211 252 / 0.52) 0 0.8px, transparent 1.5px),
+    radial-gradient(circle at 29% 38%, rgb(255 255 255 / 0.56) 0 1.2px, transparent 1.8px),
+    radial-gradient(circle at 43% 8%, rgb(196 181 253 / 0.5) 0 0.7px, transparent 1.4px),
+    radial-gradient(circle at 56% 81%, rgb(255 255 255 / 0.66) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 67% 26%, rgb(125 211 252 / 0.64) 0 1.4px, transparent 2px),
+    radial-gradient(circle at 79% 61%, rgb(255 255 255 / 0.48) 0 0.8px, transparent 1.5px),
+    radial-gradient(circle at 91% 19%, rgb(254 215 170 / 0.58) 0 1px, transparent 1.8px),
+    radial-gradient(ellipse at 22% 42%, rgb(56 189 248 / 0.055), transparent 24%),
+    radial-gradient(ellipse at 78% 68%, rgb(139 92 246 / 0.05), transparent 28%);
+  opacity: 0.72;
+}
+
+.stars::before,
+.stars::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+}
+
+.stars::before {
+  background-image:
+    radial-gradient(circle at 11% 52%, white 0 0.6px, transparent 1.2px),
+    radial-gradient(circle at 24% 21%, white 0 1px, transparent 1.5px),
+    radial-gradient(circle at 38% 67%, rgb(186 230 253) 0 0.7px, transparent 1.3px),
+    radial-gradient(circle at 52% 33%, white 0 0.6px, transparent 1.2px),
+    radial-gradient(circle at 64% 91%, white 0 1.1px, transparent 1.7px),
+    radial-gradient(circle at 73% 12%, rgb(221 214 254) 0 0.8px, transparent 1.4px),
+    radial-gradient(circle at 86% 46%, white 0 0.7px, transparent 1.3px),
+    radial-gradient(circle at 96% 78%, rgb(186 230 253) 0 1px, transparent 1.6px);
+  opacity: 0.42;
+  animation: star-twinkle 9s ease-in-out infinite alternate;
+}
+
+.stars::after {
+  top: 14%;
+  right: auto;
+  bottom: auto;
+  left: 72%;
+  width: 110px;
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgb(186 230 253 / 0.7), white);
+  filter: drop-shadow(0 0 5px rgb(125 211 252 / 0.55));
+  opacity: 0;
+  transform: rotate(-28deg) translateX(-18vw);
+  animation: shooting-star 18s ease-in 7s infinite;
 }
 
 .identity {
   position: absolute;
   z-index: 5;
-  top: 28px;
+  top: 26px;
   left: 32px;
+  display: grid;
+  gap: 0.38rem;
   color: rgb(226 232 240 / 0.86);
-  font-size: clamp(0.85rem, 1.4vw, 1rem);
-  letter-spacing: 0;
+}
+
+.identity strong {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: clamp(0.68rem, 1.05vw, 0.82rem);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.identity span {
+  color: rgb(203 213 225 / 0.58);
+  font-size: clamp(0.68rem, 1vw, 0.78rem);
 }
 
 .watermark {
   position: absolute;
   z-index: 1;
-  inset: 12% 0 auto;
-  text-align: center;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
   font-family: "Exo 2", system-ui, sans-serif;
-  font-size: clamp(5rem, 19vw, 18rem);
-  font-weight: 800;
-  color: rgb(255 255 255 / 0.045);
   pointer-events: none;
+}
+
+.watermark span {
+  position: absolute;
+  max-width: 92vw;
+  color: rgb(255 255 255 / 0.04);
+  font-size: clamp(4.6rem, 17vw, 16rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 0.78;
+  text-align: center;
+  opacity: 0;
+  animation: identity-word-cycle var(--word-duration) ease-in-out infinite;
+  animation-delay: var(--word-delay);
 }
 
 .system-stage,
@@ -119,8 +184,18 @@ a {
   font-weight: 700;
 }
 
-button.sun {
+.sun {
   border: 0;
+  text-decoration: none;
+  transition: scale 180ms ease, filter 180ms ease;
+}
+
+.sun:hover,
+.sun:focus-visible {
+  scale: 1.04;
+  filter: brightness(1.08);
+  outline: 2px solid rgb(254 240 138 / 0.82);
+  outline-offset: 7px;
 }
 
 .planet-orbit,
@@ -164,22 +239,27 @@ button.sun {
   box-shadow: 0 0 28px color-mix(in srgb, var(--primary), transparent 44%);
 }
 
-.motion-trail {
+.arc-trail {
   position: absolute;
-  bottom: calc(var(--object-radius) - 2px);
-  left: 50%;
-  width: var(--trail-width);
-  height: var(--trail-length);
-  border-radius: 999px;
-  background: linear-gradient(
-    180deg,
-    transparent,
-    color-mix(in srgb, var(--primary), transparent 78%) 44%,
-    color-mix(in srgb, var(--primary), transparent 38%)
+  width: calc(var(--distance) + var(--distance));
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg 28deg,
+    color-mix(in srgb, var(--primary), transparent 96%) 38deg,
+    color-mix(in srgb, var(--primary), transparent 78%) 58deg,
+    color-mix(in srgb, var(--primary), transparent 36%) 86deg,
+    transparent 90deg 360deg
   );
-  filter: blur(7px);
-  transform: translateX(-50%);
-  opacity: 0.72;
+  transform: translateX(calc(0px - var(--distance)));
+  opacity: 0.76;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--primary), transparent 62%));
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - var(--trail-width)),
+    #000 calc(100% - var(--trail-width) + 1px)
+  );
   pointer-events: none;
 }
 
@@ -199,12 +279,27 @@ button.sun {
   animation: label-counter-spin var(--duration) linear infinite;
 }
 
+.planet,
+.moon {
+  transition: scale 180ms ease, filter 180ms ease, box-shadow 180ms ease;
+}
+
 .planet-orbit:hover .planet,
-.planet-orbit:focus-visible .planet,
+.planet-orbit:focus-visible .planet {
+  scale: 1.1;
+  filter: brightness(1.08) saturate(1.08);
+  box-shadow: 0 0 36px color-mix(in srgb, var(--primary), transparent 30%);
+}
+
 .moon-orbit:hover .moon,
 .moon-orbit:focus-visible .moon {
-  outline: 2px solid white;
-  outline-offset: 5px;
+  scale: 1.08;
+  filter: brightness(1.1);
+}
+
+.planet-orbit:focus-visible,
+.moon-orbit:focus-visible {
+  outline: none;
 }
 
 .focus-layout {
@@ -224,7 +319,7 @@ button.sun {
 .focus-stage {
   --moon-system-radius: clamp(
     112px,
-    min(calc(50vw - var(--preview-half) - 62px), calc(50dvh - 96px)),
+    min(calc(50vw - var(--preview-half) - 118px), calc(50dvh - 118px)),
     34vmin
   );
   right: var(--preview-reserve);
@@ -239,13 +334,14 @@ button.sun {
 }
 
 .moon {
-  --object-radius: clamp(10px, 1.4vmin, 15px);
+  --object-radius: clamp(12px, 1.55vmin, 17px);
 }
 
 .moon-orbit {
-  --object-radius: clamp(10px, 1.4vmin, 15px);
-  --trail-length: clamp(30px, 5vmin, 54px);
-  --trail-width: clamp(5px, 0.7vmin, 8px);
+  --object-radius: clamp(12px, 1.55vmin, 17px);
+  --trail-width: clamp(2px, 0.32vmin, 4px);
+  --callout-straight: clamp(10px, 1.4vw, 16px);
+  --callout-diagonal: clamp(14px, 1.8vw, 20px);
 }
 
 .moon-orbit::after {
@@ -257,12 +353,14 @@ button.sun {
 }
 
 .moon-orbit.is-selected .moon {
-  outline: 2px solid color-mix(in srgb, var(--primary), white 42%);
-  outline-offset: 6px;
+  scale: 1.12;
+  filter: brightness(1.12) saturate(1.08);
+  box-shadow: 0 0 25px color-mix(in srgb, var(--primary), transparent 24%);
 }
 
 .moon-label {
-  top: calc(var(--object-radius) + 5px);
+  top: -29px;
+  left: calc(var(--object-radius) + var(--callout-straight) + var(--callout-diagonal) - 4px);
   overflow: hidden;
   max-width: clamp(82px, 10vw, 124px);
   padding: 0.26rem 0.48rem;
@@ -271,6 +369,36 @@ button.sun {
   text-decoration: none;
   white-space: nowrap;
   pointer-events: none;
+}
+
+.moon-connector {
+  position: absolute;
+  top: 0;
+  left: var(--object-radius);
+  width: var(--callout-straight);
+  height: 1px;
+  background: color-mix(in srgb, var(--primary), transparent 36%);
+  pointer-events: none;
+}
+
+.moon-connector::after {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  width: var(--callout-diagonal);
+  height: 1px;
+  background: inherit;
+  content: "";
+  transform: rotate(-35deg);
+  transform-origin: left center;
+}
+
+.moon-orbit.callout-down .moon-connector::after {
+  transform: rotate(35deg);
+}
+
+.moon-orbit.callout-down .moon-label {
+  top: 12px;
 }
 
 .back-button {
@@ -761,6 +889,52 @@ button.sun {
   }
 }
 
+@keyframes star-twinkle {
+  0%,
+  100% {
+    opacity: 0.28;
+  }
+  45% {
+    opacity: 0.62;
+  }
+  72% {
+    opacity: 0.38;
+  }
+}
+
+@keyframes shooting-star {
+  0%,
+  68%,
+  100% {
+    opacity: 0;
+    transform: rotate(-28deg) translateX(-18vw);
+  }
+  70% {
+    opacity: 0.68;
+  }
+  76% {
+    opacity: 0;
+    transform: rotate(-28deg) translateX(42vw);
+  }
+}
+
+@keyframes identity-word-cycle {
+  0% {
+    opacity: 0;
+    translate: 0 12px;
+  }
+  5%,
+  27% {
+    opacity: 1;
+    translate: 0 0;
+  }
+  33%,
+  100% {
+    opacity: 0;
+    translate: 0 -10px;
+  }
+}
+
 @media (max-width: 900px) {
   .system-stage {
     --system-radius: clamp(
@@ -785,7 +959,7 @@ button.sun {
   .focus-stage {
     --moon-system-radius: clamp(
       70px,
-      min(calc(50vw - 68px), 18dvh),
+      min(calc(50vw - 90px), 18dvh),
       150px
     );
     top: 60px;
@@ -799,14 +973,22 @@ button.sun {
   }
 
   .moon-orbit {
-    --object-radius: clamp(9px, 2.8vw, 13px);
-    --trail-length: clamp(25px, 8vw, 42px);
+    --object-radius: clamp(10px, 3vw, 14px);
+    --trail-width: clamp(1.5px, 0.55vw, 2.5px);
+    --callout-straight: clamp(7px, 2vw, 10px);
+    --callout-diagonal: clamp(9px, 2.8vw, 13px);
   }
 
   .moon-label {
-    max-width: clamp(72px, 26vw, 106px);
+    top: -25px;
+    left: calc(var(--object-radius) + var(--callout-straight) + var(--callout-diagonal) - 3px);
+    max-width: clamp(64px, 22vw, 92px);
     padding: 0.22rem 0.4rem;
     font-size: 0.62rem;
+  }
+
+  .moon-orbit.callout-down .moon-label {
+    top: 10px;
   }
 
   .preview-panel {
@@ -879,7 +1061,19 @@ button.sun {
 @media (max-width: 560px) {
   .identity {
     max-width: calc(100vw - 36px);
-    font-size: 0.76rem;
+  }
+
+  .identity strong {
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+  }
+
+  .identity span {
+    font-size: 0.66rem;
+  }
+
+  .watermark span {
+    font-size: clamp(3.8rem, 20vw, 7rem);
   }
 
   .back-button {
@@ -931,12 +1125,38 @@ button.sun {
     animation: none;
   }
 
+  .planet,
+  .moon,
+  .sun {
+    transition: none;
+  }
+
   .orbital-label,
   .moon-label {
     transform: rotate(calc(0deg - var(--angle)));
   }
 
-  .motion-trail {
-    opacity: 0.3;
+  .arc-trail {
+    opacity: 0.2;
+  }
+
+  .stars::before {
+    animation: none;
+    opacity: 0.36;
+  }
+
+  .stars::after {
+    display: none;
+  }
+
+  .watermark span {
+    display: none;
+    animation: none;
+    translate: none;
+  }
+
+  .watermark span:first-child {
+    display: block;
+    opacity: 1;
   }
 }
