@@ -12,21 +12,7 @@ if (!mode) {
 
 const sourceUrl = "https://abhik-portfolio-pski.onrender.com/";
 const source = JSON.parse(await readFile(new URL("../src/data/legacy-portfolio.json", import.meta.url), "utf8"));
-const showcaseFixtures = {
-  antix: {
-    overview: "AnTix is an end-to-end ticketing platform built for the operational reality of live events, supporting purchase through check-in with QR delivery and organizer administration.",
-    lifecycle: "Production",
-    role: "Solo builder — product, frontend, backend, and event operations",
-    teamSize: "Independent project",
-    caseStudyItems: [
-      { kind: "feature", title: "Ticket fulfillment", body: "Verified payment completion creates tickets and triggers QR delivery with resend and recovery workflows.", displayOrder: 1 },
-      { kind: "feature", title: "Live check-in", body: "Mobile workflows validate QR tickets while protecting against duplicate scans and inconsistent entry state.", displayOrder: 2 },
-      { kind: "challenge", title: "Reliable checkout state", body: "Stripe webhooks, reservations, verification logic, and duplicate-webhook handling keep retries and network failures from producing duplicate fulfillment.", displayOrder: 1 },
-      { kind: "metric", title: "Live-event use", body: "Used by two organizers across five live events to sell and validate 500 tickets.", meta: "99% ticket-delivery rate reported through delivery logging and recovery tooling.", displayOrder: 1 },
-      { kind: "future-plan", title: "Showcase media", body: "Screenshots and a walkthrough video are pending; no media has been added until it is clearly mapped to this project.", displayOrder: 1 },
-    ],
-  },
-};
+const showcaseFixtures = JSON.parse(await readFile(new URL("../src/data/showcase-fixtures.json", import.meta.url), "utf8"));
 source.projects = source.projects.map((project) => ({ ...project, ...showcaseFixtures[project.slug] }));
 const retiredPlaceholderSlugs = ["orbital-portfolio", "acs-studios-registry", "signal-sketches"];
 const q = (value) => value == null ? "NULL" : `'${String(value).replaceAll("'", "''")}'`;

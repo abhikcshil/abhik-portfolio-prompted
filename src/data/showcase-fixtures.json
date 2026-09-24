@@ -1,0 +1,106 @@
+{
+  "portfolio-site": {
+    "shortDescription": "An interactive, data-backed portfolio that presents multidisciplinary work as an accessible orbital system.",
+    "overview": "This portfolio pairs a cinematic orbital interface with a structured content system for project case studies. Domains become planets and projects become moons, while detail routes turn the exploratory interface into readable technical documentation. The current implementation is a Cloudflare-native React/Vite application with a D1-backed API and static fallback data.",
+    "lifecycle": "Active Development",
+    "role": "Interaction design, frontend, content model, admin workflow, and Cloudflare implementation",
+    "teamSize": "Independent project",
+    "techStack": ["React", "TypeScript", "Vite", "React Router", "Cloudflare Workers", "Cloudflare D1", "Cloudflare Access"],
+    "sections": [
+      { "heading": "Technical architecture", "body": "The React/Vite interface reads public portfolio data from a Cloudflare Worker. The Worker serves public endpoints and Access-protected admin endpoints backed by D1; source-controlled fallback data and an idempotent importer preserve resilience when the database is unavailable. The previous Next.js, Prisma, and PostgreSQL implementation is retained only as historical context—the Cloudflare/D1 system is the current direction.", "displayOrder": 1 },
+      { "heading": "Current state", "body": "The public orbital experience, detail routes, D1 migrations, importer, and admin surfaces are implemented. Media upload remains intentionally out of scope; media metadata can be managed now and verified assets can be connected later.", "displayOrder": 2 }
+    ],
+    "caseStudyItems": [
+      { "kind": "feature", "title": "Orbital project navigation", "body": "Focusable domain planets and project moons make the portfolio explorable without replacing direct project routes.", "displayOrder": 1 },
+      { "kind": "feature", "title": "Structured publishing model", "body": "Projects support placements, visibility, technologies, links, media metadata, sections, and case-study items through an editable data model.", "displayOrder": 2 },
+      { "kind": "feature", "title": "Accessible motion", "body": "Deterministic orbit positioning and reduced-motion behavior keep the visual system stable and usable across devices.", "displayOrder": 3 },
+      { "kind": "challenge", "title": "Replatforming the content system", "body": "The current app moves the portfolio from a conventional Next.js/PostgreSQL stack to a Worker/D1 model while preserving the normalized project content and editing workflow.", "displayOrder": 1 },
+      { "kind": "challenge", "title": "Visual navigation backed by relational data", "body": "Many-to-many project placement and domain-specific ordering are translated into predictable orbit positions without sacrificing content flexibility.", "displayOrder": 2 },
+      { "kind": "metric", "title": "Current content scope", "body": "The normalized portfolio model contains four domains and 20 imported projects.", "displayOrder": 1 }
+    ]
+  },
+  "antix": {
+    "shortDescription": "A production event platform for publishing events, selling QR tickets, delivering them by email, and operating entry at the door.",
+    "overview": "AnTix supports the complete event flow from public discovery and ticket-tier selection through Stripe Checkout, ticket issuance, email delivery, and on-site scanning. Organizer and owner tools cover events, promotions, orders, tickets, delivery diagnostics, reconciliation, and scoped operational access. The current Cloudflare implementation supersedes earlier Python and Flask/PostgreSQL versions.",
+    "lifecycle": "Production",
+    "role": "Full-stack product implementation across buyer, organizer, door-staff, and operator workflows",
+    "techStack": ["React", "TypeScript", "Vite", "Cloudflare Pages Functions", "Cloudflare D1", "Cloudflare R2", "Stripe", "Resend", "html5-qrcode"],
+    "links": [{ "label": "Live site", "url": "https://antix.acsstudios.co", "linkType": "live", "displayOrder": 1 }],
+    "sections": [
+      { "heading": "Technical architecture", "body": "A React/Vite application serves public, organizer, scanner, and owner experiences through Cloudflare Pages Functions. D1 stores users, roles, events, ticket tiers, promotions, checkout state, orders, tickets, delivery logs, and scans; R2 stores event flyers. Stripe Checkout collects payment, signed webhooks trigger fulfillment, and Resend delivers QR tickets.", "displayOrder": 1 },
+      { "heading": "Reliability & security", "body": "Server-authoritative inventory and promotion checks run before checkout. Webhook signature validation, reservation expiry, idempotent fulfillment, unique ticket codes, delivery cooldowns, audit history, and event-scoped scanner permissions protect the payment-to-admission flow. Ticket pages expose only the event, tier, and status—not buyer identity or provider identifiers.", "displayOrder": 2 },
+      { "heading": "Current state", "body": "The Cloudflare application is documented as the active production implementation. PDF tickets, wallet passes, refund synchronization, free checkout, and an alternate Cloudflare Email provider remain future directions rather than current capabilities.", "displayOrder": 3 }
+    ],
+    "caseStudyItems": [
+      { "kind": "feature", "title": "Event publishing and ticket tiers", "body": "Organizers manage draft and published events, ticket tiers, promotion codes, venue details, and flyer uploads.", "displayOrder": 1 },
+      { "kind": "feature", "title": "Payment-to-ticket fulfillment", "body": "Stripe Checkout, webhook processing, unique ticket creation, QR rendering, and resendable delivery are connected as one operational flow.", "displayOrder": 2 },
+      { "kind": "feature", "title": "On-site entry operations", "body": "Door staff can scan camera or file QR codes, search manually, check guests in or out, and review event-scoped history.", "displayOrder": 3 },
+      { "kind": "feature", "title": "Operational diagnostics", "body": "Owner tools surface webhook, checkout, delivery, scanner, order, and reconciliation information alongside role-scoped administration.", "displayOrder": 4 },
+      { "kind": "challenge", "title": "Consistent payment and inventory state", "body": "Checkout creation, webhooks, expiration, and late retries are coordinated through reservations, verification, and idempotent processing so paid orders are not fulfilled twice.", "displayOrder": 1 },
+      { "kind": "challenge", "title": "Admission with scoped authority", "body": "Scanner access is restricted by event and role while duplicate check-in state and audit history remain visible to operators.", "displayOrder": 2 },
+      { "kind": "challenge", "title": "Current versus legacy architecture", "body": "The active Cloudflare/D1 application preserves the product behavior of the earlier Flask/PostgreSQL direction while changing the runtime and deployment model.", "displayOrder": 3 },
+      { "kind": "future-plan", "title": "Safe operational media", "body": "Connect screenshots only after event, buyer, payment, and credential data has been replaced with publishable fixtures. A suitable walkthrough would cover event setup, a test purchase, QR delivery, scanning, and reconciliation.", "displayOrder": 1 }
+    ]
+  },
+  "soulframe": {
+    "shortDescription": "A hardware/software platform for assigning motion art to networked frames and keeping Raspberry Pi playback synchronized through connectivity changes.",
+    "overview": "SoulFrame combines a mobile-first owner dashboard, a FastAPI backend, and a Raspberry Pi device agent for remotely managed motion-art displays. Users upload media, create playlists, assign content to frames, pair devices with QR codes, and observe runtime telemetry. The device caches normalized media locally so playback can continue when the network drops.",
+    "lifecycle": "Active Development",
+    "techStack": ["React", "TypeScript", "Vite", "FastAPI", "SQLAlchemy", "SQLite", "PostgreSQL", "FFmpeg", "MPV", "Raspberry Pi", "systemd"],
+    "sections": [
+      { "heading": "Technical architecture", "body": "The React dashboard communicates with FastAPI services secured by user JWTs, while devices use a separate token boundary. SQLAlchemy models users, devices, media, playlists, assignments, runtime state, and commands. Uploaded media is normalized with FFmpeg, then the Pi agent polls for revisions and commands, downloads assigned media with ETag support, caches it by checksum, and plays it fullscreen through MPV.", "displayOrder": 1 },
+      { "heading": "Reliability & device operations", "body": "Only ready normalized media is delivered to a device. Revisions, checksums, command expiry and acknowledgements, explicit device states, automatic reconnect behavior, and cached offline playback make the frame observable and usable through intermittent connectivity.", "displayOrder": 2 },
+      { "heading": "Current state", "body": "The current repository contains the fuller implementation; an older copy is historical only. Physical-device testing is evidenced by Pi paths, systemd setup, MPV logs, telemetry, and local media, but production hosting and deployment scale are not documented.", "displayOrder": 3 }
+    ],
+    "caseStudyItems": [
+      { "kind": "feature", "title": "Claim and pair devices", "body": "A newly registered device exposes a pairing code and QR claim flow before it becomes available in the owner dashboard.", "displayOrder": 1 },
+      { "kind": "feature", "title": "Media and playlist assignment", "body": "Owners can manage uploads, playlist ordering, direct assignment, and device-safe playback renditions.", "displayOrder": 2 },
+      { "kind": "feature", "title": "Remote runtime control", "body": "Refresh, restart playback, clear cache, reboot, unassign, health, and debug commands are queued and acknowledged by the agent.", "displayOrder": 3 },
+      { "kind": "feature", "title": "Offline-first playback", "body": "The agent maintains a checksum-indexed cache and reconnects after network loss while preserving playback state.", "displayOrder": 4 },
+      { "kind": "challenge", "title": "Separate human and device trust", "body": "User JWTs and device tokens are distinct, with device identity cross-checks and downloads restricted to assigned content.", "displayOrder": 1 },
+      { "kind": "challenge", "title": "Predictable media on constrained hardware", "body": "The upload path produces playback-safe renditions before distribution, preventing failed source media from reaching a frame.", "displayOrder": 2 },
+      { "kind": "future-plan", "title": "Production hardening", "body": "The inventory documents future work around background media processing, monitoring, backups, HTTPS/CORS, rate limiting, and potentially push-capable device transport.", "displayOrder": 1 }
+    ]
+  },
+  "spotisync-app": {
+    "shortDescription": "A local DJ-library workbench for scanning audio, reviewing Spotify matches, routing tracks, and safely synchronizing managed playlists.",
+    "overview": "SpotiSync keeps a local DJ library and Spotify playlists aligned without uploading or downloading audio. Its CLI and local Flask interface support library ingest, metadata extraction, routing, matching, reconciliation, gap review, and staged metadata proposals. The tool prioritizes reviewable automation: ambiguous matches, proposed edits, and destructive playlist changes require explicit decisions.",
+    "lifecycle": "Maintenance",
+    "techStack": ["Python", "Flask", "SQLite", "Spotify Web API", "Spotipy", "Mutagen", "RapidFuzz", "Chromaprint", "AcoustID", "Google GenAI"],
+    "sections": [
+      { "heading": "Technical architecture", "body": "A Python CLI and Flask/Jinja interface share a workflow layer and background job manager. SQLite holds local tracks, Spotify matches, fingerprints, playlists, sync history, activity, and metadata proposals, while a versioned JSON genre map remains the routing source of truth. Spotify provides catalog and playlist access; acoustic matching and structured metadata proposals are optional enhancements.", "displayOrder": 1 },
+      { "heading": "Safety model", "body": "Reconciliation starts in preview mode and can remove tracks only from application-managed playlists. Routing edits are validated, atomic, version-checked, and backed up. Metadata proposals never write files until Apply is selected, and the protected download queue excludes ambiguous matches and Liked Songs.", "displayOrder": 2 },
+      { "heading": "Current state", "body": "This is a local operational tool rather than a hosted service. Its local database, backups, OAuth artifacts, and September 2026 work support ongoing use, but public library scale and sync volume are intentionally not claimed.", "displayOrder": 3 }
+    ],
+    "caseStudyItems": [
+      { "kind": "feature", "title": "Library ingest and routing", "body": "Scans common audio formats, preserves stable identity, and routes tracks through overrides, folder maps, safe rules, genre keywords, and an unsorted fallback.", "displayOrder": 1 },
+      { "kind": "feature", "title": "Reviewable playlist sync", "body": "Weighted Spotify matching, duplicate avoidance, history, reconciliation previews, and managed-playlist boundaries support controlled synchronization.", "displayOrder": 2 },
+      { "kind": "feature", "title": "Gap and metadata workflows", "body": "The workbench identifies exact, ambiguous, and missing tracks; staged proposals allow deterministic or AI-assisted metadata cleanup before a manual apply.", "displayOrder": 3 },
+      { "kind": "feature", "title": "Operational visibility", "body": "Background-job progress, activity logs, diagnostics, library views, and routing management make long-running local workflows inspectable.", "displayOrder": 4 },
+      { "kind": "challenge", "title": "Matching messy music metadata", "body": "Multi-query scoring, mismatch penalties, thresholds, and optional acoustic evidence handle differences in versions, artists, and titles while retaining human review.", "displayOrder": 1 },
+      { "kind": "challenge", "title": "Preserving identity through edits", "body": "File identity and relational history survive renames and metadata changes so new organization does not erase operational context.", "displayOrder": 2 },
+      { "kind": "challenge", "title": "AI as a proposal, not a mutation", "body": "AI output is cached and schema-validated into a proposal; users explicitly preview, regenerate, reset, or apply it.", "displayOrder": 3 }
+    ]
+  },
+  "tranquility": {
+    "shortDescription": "A self-hosted, mobile-first productivity app for tasks, recurring work, habits, notes, focus, points, and weekly review.",
+    "overview": "Tranquility is designed around everyday planning rather than a one-off task list: it combines recurring tasks, habits, reminders, notes, focus mode, progress feedback, and weekly review. The Next.js application uses server actions and an authenticated service layer over Prisma and SQLite. Its data model distinguishes recurring parents from per-day task instances, enabling flexible weekly work without incorrectly closing the parent task.",
+    "lifecycle": "Active Development",
+    "techStack": ["Next.js", "React", "TypeScript", "Tailwind CSS", "Prisma", "SQLite", "bcryptjs"],
+    "sections": [
+      { "heading": "Technical architecture", "body": "Next.js server-rendered pages and client components call server actions that pass through authenticated services to Prisma and SQLite. The schema models users, sessions, categories, tasks, recurrence, per-day task instances, habits and completions, notes, point events, settings, and milestones. Authentication and ownership work extends an earlier single-user dataset toward invite-code accounts and scoped data.", "displayOrder": 1 },
+      { "heading": "Reliability & privacy", "body": "Passwords are hashed and session tokens are stored as hashes with expiry. User-scoped queries, compound uniqueness, cascade deletes, validation, and transactional point logic protect the personal workflow as data moves into a multi-user model.", "displayOrder": 2 },
+      { "heading": "Current state", "body": "The inventory identifies active development and notes that the checked-out authentication and multi-user work is newer than the README. Reminder selection and display exist, but no external push, email, or system notification delivery channel is implemented.", "displayOrder": 3 }
+    ],
+    "caseStudyItems": [
+      { "kind": "feature", "title": "Flexible recurring tasks", "body": "Supports daily, weekday, weekly, monthly, and yearly patterns with per-day instances for accurate weekly progress.", "displayOrder": 1 },
+      { "kind": "feature", "title": "Habits, notes, and focus", "body": "Tracks targets, streaks, completion history, pinned notes, top priorities, reminders, and dashboard progress rings.", "displayOrder": 2 },
+      { "kind": "feature", "title": "Weekly planning loop", "body": "Weekly review summarizes completion, points, goals, carryover, reset behavior, and live progress.", "displayOrder": 3 },
+      { "kind": "feature", "title": "Authenticated personal spaces", "body": "Owner setup, invite-code signup, scoped data ownership, and session management support a self-hosted multi-user direction.", "displayOrder": 4 },
+      { "kind": "challenge", "title": "Recurrence beyond a checkbox", "body": "Flexible weekly work must record completion instances without permanently marking the recurring parent complete.", "displayOrder": 1 },
+      { "kind": "challenge", "title": "Consistent rewards", "body": "Point events are maintained through transactional application logic as tasks and habits are completed, toggled, or deleted.", "displayOrder": 2 },
+      { "kind": "challenge", "title": "Migrating ownership safely", "body": "The former single-user dataset is being transitioned to user-scoped data with a controlled claim/backfill path.", "displayOrder": 3 },
+      { "kind": "future-plan", "title": "Notification delivery", "body": "The inventory supports a future reminder-delivery channel; calendar expansion, collaboration, advanced analytics, and complex notifications are not current MVP commitments.", "displayOrder": 1 }
+    ]
+  }
+}

@@ -1,4 +1,5 @@
 import legacyPortfolio from "./legacy-portfolio.json";
+import showcaseFixturesJson from "./showcase-fixtures.json";
 
 export type Visibility = "public" | "private" | "draft";
 
@@ -89,21 +90,7 @@ export type PortfolioPayload = {
 
 export const fallbackDomains = legacyPortfolio.domains as PortfolioDomain[];
 
-const showcaseFixtures: Record<string, Partial<PortfolioProject>> = {
-  antix: {
-    overview: "AnTix is an end-to-end ticketing platform built for the operational reality of live events, supporting purchase through check-in with QR delivery and organizer administration.",
-    lifecycle: "Production",
-    role: "Solo builder — product, frontend, backend, and event operations",
-    teamSize: "Independent project",
-    caseStudyItems: [
-      { kind: "feature", title: "Ticket fulfillment", body: "Verified payment completion creates tickets and triggers QR delivery with resend and recovery workflows.", displayOrder: 1 },
-      { kind: "feature", title: "Live check-in", body: "Mobile workflows validate QR tickets while protecting against duplicate scans and inconsistent entry state.", displayOrder: 2 },
-      { kind: "challenge", title: "Reliable checkout state", body: "Stripe webhooks, reservations, verification logic, and duplicate-webhook handling keep retries and network failures from producing duplicate fulfillment.", displayOrder: 1 },
-      { kind: "metric", title: "Live-event use", body: "Used by two organizers across five live events to sell and validate 500 tickets.", meta: "99% ticket-delivery rate reported through delivery logging and recovery tooling.", displayOrder: 1 },
-      { kind: "future-plan", title: "Showcase media", body: "Screenshots and a walkthrough video are pending; no media has been added until it is clearly mapped to this project.", displayOrder: 1 },
-    ],
-  },
-};
+const showcaseFixtures = showcaseFixturesJson as Record<string, Partial<PortfolioProject>>;
 
 export const fallbackProjects = (legacyPortfolio.projects as PortfolioProject[]).map((project) => ({
   ...project,
