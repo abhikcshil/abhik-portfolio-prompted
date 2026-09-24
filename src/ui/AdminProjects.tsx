@@ -13,6 +13,10 @@ const emptyProject: Partial<PortfolioProject> = {
   title: "",
   shortDescription: "",
   description: "",
+  overview: "",
+  lifecycle: "",
+  role: "",
+  teamSize: "",
   status: "Draft",
   visibility: "draft",
   enabled: true,
@@ -21,6 +25,10 @@ const emptyProject: Partial<PortfolioProject> = {
   techStack: [],
   highlights: [],
   placements: [],
+  links: [],
+  visuals: [],
+  sections: [],
+  caseStudyItems: [],
 };
 
 export function AdminProjects({ mode }: Props) {
@@ -92,6 +100,10 @@ export function AdminProjects({ mode }: Props) {
             Full Description
             <textarea value={selected.description ?? ""} onChange={(event) => setSelected({ ...selected, description: event.target.value })} />
           </label>
+          <label>
+            Overview
+            <textarea value={selected.overview ?? ""} onChange={(event) => setSelected({ ...selected, overview: event.target.value })} />
+          </label>
           <div className="form-row">
             <label>
               Status
@@ -106,6 +118,11 @@ export function AdminProjects({ mode }: Props) {
               </select>
             </label>
           </div>
+          <div className="form-row">
+            <label>Lifecycle<input placeholder="Production, Maintenance, Coursework…" value={selected.lifecycle ?? ""} onChange={(event) => setSelected({ ...selected, lifecycle: event.target.value })} /></label>
+            <label>Role<input value={selected.role ?? ""} onChange={(event) => setSelected({ ...selected, role: event.target.value })} /></label>
+            <label>Team size<input value={selected.teamSize ?? ""} onChange={(event) => setSelected({ ...selected, teamSize: event.target.value })} /></label>
+          </div>
           <label>
             Tech Stack
             <input value={(selected.techStack ?? []).join(", ")} onChange={(event) => setSelected({ ...selected, techStack: splitList(event.target.value) })} />
@@ -113,6 +130,22 @@ export function AdminProjects({ mode }: Props) {
           <label>
             Highlights
             <textarea value={(selected.highlights ?? []).join("\n")} onChange={(event) => setSelected({ ...selected, highlights: splitLines(event.target.value) })} />
+          </label>
+          <label>
+            Story sections (JSON)
+            <textarea value={formatJson(selected.sections ?? [])} onChange={(event) => setSelected({ ...selected, sections: parseJson(event.target.value, selected.sections ?? []) })} />
+          </label>
+          <label>
+            Links (JSON)
+            <textarea value={formatJson(selected.links ?? [])} onChange={(event) => setSelected({ ...selected, links: parseJson(event.target.value, selected.links ?? []) })} />
+          </label>
+          <label>
+            Showcase media (JSON: url, alt, visualType, featured, posterUrl, provider)
+            <textarea value={formatJson(selected.visuals ?? [])} onChange={(event) => setSelected({ ...selected, visuals: parseJson(event.target.value, selected.visuals ?? []) })} />
+          </label>
+          <label>
+            Features, challenges, metrics & future plans (JSON)
+            <textarea value={formatJson(selected.caseStudyItems ?? [])} onChange={(event) => setSelected({ ...selected, caseStudyItems: parseJson(event.target.value, selected.caseStudyItems ?? []) })} />
           </label>
           <fieldset>
             <legend>Domains</legend>
@@ -174,3 +207,6 @@ function splitList(value: string) {
 function splitLines(value: string) {
   return value.split("\n").map((item) => item.trim()).filter(Boolean);
 }
+
+function formatJson(value: unknown) { return JSON.stringify(value, null, 2); }
+function parseJson<T>(value: string, fallback: T): T { try { return JSON.parse(value) as T; } catch { return fallback; } }

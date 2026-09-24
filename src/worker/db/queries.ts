@@ -29,6 +29,10 @@ type ProjectRow = {
   title: string;
   short_description: string;
   description: string;
+  overview: string;
+  lifecycle: string;
+  role: string;
+  team_size: string | null;
   status: string;
   visibility: Visibility;
   enabled: number;
@@ -54,6 +58,11 @@ type ChildRow = {
   body?: string;
   alt?: string;
   visual_type?: string;
+  featured?: number;
+  poster_url?: string;
+  provider?: string;
+  item_kind?: string;
+  meta?: string;
   display_order: number;
 };
 
@@ -107,6 +116,7 @@ function emptyChildren(projectId: string) {
     links: [] as PortfolioProject["links"],
     visuals: [] as PortfolioProject["visuals"],
     sections: [] as PortfolioProject["sections"],
+    caseStudyItems: [] as NonNullable<PortfolioProject["caseStudyItems"]>,
     projectId,
   };
 }
@@ -121,7 +131,11 @@ function projectFromRow(
     title: row.title,
     shortDescription: row.short_description,
     description: row.description,
+    overview: row.overview || undefined,
     status: row.status,
+    lifecycle: row.lifecycle || undefined,
+    role: row.role || undefined,
+    teamSize: row.team_size || undefined,
     visibility: row.visibility,
     enabled: row.enabled === 1,
     archived: row.archived === 1,
@@ -133,6 +147,7 @@ function projectFromRow(
     links: children.links,
     visuals: children.visuals,
     sections: children.sections,
+    caseStudyItems: children.caseStudyItems,
     placements: children.placements,
   };
 }
@@ -180,7 +195,7 @@ async function hydrateProjects(db: D1Database, rows: ProjectRow[]) {
   const placeholders = projectIds.map(() => "?").join(",");
   const children = new Map(projectIds.map((id) => [id, emptyChildren(id)]));
 
-  const [placements, tech, highlights, links, sections, visuals] = await Promise.all([
+  const [placements, tech, highlights, links, sections, visuals, caseStudyItems] = await Promise.all([
     db
       .prepare(
         `SELECT p.project_id, d.slug AS domain_slug, p.placement_order
@@ -229,10 +244,19 @@ async function hydrateProjects(db: D1Database, rows: ProjectRow[]) {
       .all<ChildRow>(),
     db
       .prepare(
-        `SELECT project_id, label, url, alt, visual_type, display_order
+        `SELECT project_id, label, url, alt, visual_type, featured, poster_url, provider, display_order
          FROM project_visuals
          WHERE project_id IN (${placeholders})
          ORDER BY display_order ASC`,
+      )
+      .bind(...projectIds)
+      .all<ChildRow>(),
+    db
+      .prepare(
+        `SELECT project_id, item_kind, title AS label, body, meta, display_order
+         FROM project_case_study_items
+         WHERE project_id IN (${placeholders})
+         ORDER BY item_kind ASC, display_order ASC`,
       )
       .bind(...projectIds)
       .all<ChildRow>(),
@@ -269,6 +293,18 @@ async function hydrateProjects(db: D1Database, rows: ProjectRow[]) {
       url: row.url ?? "",
       alt: row.alt ?? "",
       visualType: (row.visual_type ?? "image") as PortfolioProject["visuals"][number]["visualType"],
+      featured: row.featured === 1,
+      posterUrl: row.poster_url ?? undefined,
+      provider: row.provider ?? undefined,
+      displayOrder: row.display_order,
+    });
+  }
+  for (const row of caseStudyItems.results) {
+    children.get(row.project_id)?.caseStudyItems.push({
+      kind: (row.item_kind ?? "feature") as NonNullable<PortfolioProject["caseStudyItems"]>[number]["kind"],
+      title: row.label ?? "",
+      body: row.body ?? "",
+      meta: row.meta ?? undefined,
       displayOrder: row.display_order,
     });
   }
@@ -320,13 +356,17 @@ export async function upsertProject(db: D1Database, input: ProjectInput) {
   await db
     .prepare(
       `INSERT INTO projects (
-        id, slug, title, short_description, description, status, visibility,
+        id, slug, title, short_description, description, overview, lifecycle, role, team_size, status, visibility,
         enabled, archived, featured, start_date, end_date, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(slug) DO UPDATE SET
         title = excluded.title,
         short_description = excluded.short_description,
         description = excluded.description,
+        overview = excluded.overview,
+        lifecycle = excluded.lifecycle,
+        role = excluded.role,
+        team_size = excluded.team_size,
         status = excluded.status,
         visibility = excluded.visibility,
         enabled = excluded.enabled,
@@ -342,6 +382,10 @@ export async function upsertProject(db: D1Database, input: ProjectInput) {
       input.title,
       input.shortDescription ?? "",
       input.description ?? "",
+      input.overview ?? "",
+      input.lifecycle ?? "",
+      input.role ?? "",
+      input.teamSize ?? null,
       input.status ?? "Draft",
       input.visibility ?? "draft",
       toBool(input.enabled, true) ? 1 : 0,
@@ -365,6 +409,7 @@ async function replaceProjectChildren(db: D1Database, projectId: string, input: 
     db.prepare("DELETE FROM project_links WHERE project_id = ?").bind(projectId),
     db.prepare("DELETE FROM project_sections WHERE project_id = ?").bind(projectId),
     db.prepare("DELETE FROM project_visuals WHERE project_id = ?").bind(projectId),
+    db.prepare("DELETE FROM project_case_study_items WHERE project_id = ?").bind(projectId),
   ]);
 
   const statements: D1PreparedStatement[] = [];
@@ -440,8 +485,8 @@ async function replaceProjectChildren(db: D1Database, projectId: string, input: 
     statements.push(
       db
         .prepare(
-          `INSERT INTO project_visuals (id, project_id, label, url, alt, visual_type, display_order)
-           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO project_visuals (id, project_id, label, url, alt, visual_type, featured, poster_url, provider, display_order)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
         .bind(
           `${projectId}-visual-${visual.displayOrder}`,
@@ -450,8 +495,19 @@ async function replaceProjectChildren(db: D1Database, projectId: string, input: 
           visual.url,
           visual.alt,
           visual.visualType,
+          visual.featured ? 1 : 0,
+          visual.posterUrl ?? null,
+          visual.provider ?? null,
           visual.displayOrder,
         ),
+    );
+  }
+
+  for (const item of input.caseStudyItems ?? []) {
+    statements.push(
+      db
+        .prepare("INSERT INTO project_case_study_items (id, project_id, item_kind, title, body, meta, display_order) VALUES (?, ?, ?, ?, ?, ?, ?)")
+        .bind(`${projectId}-${item.kind}-${item.displayOrder}`, projectId, item.kind, item.title, item.body, item.meta ?? null, item.displayOrder),
     );
   }
 

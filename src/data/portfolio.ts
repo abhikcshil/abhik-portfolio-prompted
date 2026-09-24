@@ -21,7 +21,7 @@ export type PortfolioDomain = {
 export type ProjectLink = {
   label: string;
   url: string;
-  linkType: "demo" | "repo" | "case-study" | "media" | "other";
+  linkType: "live" | "demo" | "repo" | "docs" | "case-study" | "media" | "other";
   displayOrder: number;
 };
 
@@ -31,11 +31,22 @@ export type ProjectVisual = {
   alt: string;
   visualType: "image" | "video" | "embed" | "diagram";
   displayOrder: number;
+  featured?: boolean;
+  posterUrl?: string;
+  provider?: string;
 };
 
 export type ProjectSection = {
   heading: string;
   body: string;
+  displayOrder: number;
+};
+
+export type CaseStudyItem = {
+  kind: "feature" | "challenge" | "metric" | "future-plan";
+  title: string;
+  body: string;
+  meta?: string;
   displayOrder: number;
 };
 
@@ -50,7 +61,11 @@ export type PortfolioProject = {
   title: string;
   shortDescription: string;
   description: string;
+  overview?: string;
   status: string;
+  lifecycle?: string;
+  role?: string;
+  teamSize?: string;
   visibility: Visibility;
   enabled: boolean;
   archived: boolean;
@@ -62,6 +77,7 @@ export type PortfolioProject = {
   links: ProjectLink[];
   visuals: ProjectVisual[];
   sections: ProjectSection[];
+  caseStudyItems?: CaseStudyItem[];
   placements: ProjectPlacement[];
 };
 
@@ -73,7 +89,26 @@ export type PortfolioPayload = {
 
 export const fallbackDomains = legacyPortfolio.domains as PortfolioDomain[];
 
-export const fallbackProjects = legacyPortfolio.projects as PortfolioProject[];
+const showcaseFixtures: Record<string, Partial<PortfolioProject>> = {
+  antix: {
+    overview: "AnTix is an end-to-end ticketing platform built for the operational reality of live events, supporting purchase through check-in with QR delivery and organizer administration.",
+    lifecycle: "Production",
+    role: "Solo builder — product, frontend, backend, and event operations",
+    teamSize: "Independent project",
+    caseStudyItems: [
+      { kind: "feature", title: "Ticket fulfillment", body: "Verified payment completion creates tickets and triggers QR delivery with resend and recovery workflows.", displayOrder: 1 },
+      { kind: "feature", title: "Live check-in", body: "Mobile workflows validate QR tickets while protecting against duplicate scans and inconsistent entry state.", displayOrder: 2 },
+      { kind: "challenge", title: "Reliable checkout state", body: "Stripe webhooks, reservations, verification logic, and duplicate-webhook handling keep retries and network failures from producing duplicate fulfillment.", displayOrder: 1 },
+      { kind: "metric", title: "Live-event use", body: "Used by two organizers across five live events to sell and validate 500 tickets.", meta: "99% ticket-delivery rate reported through delivery logging and recovery tooling.", displayOrder: 1 },
+      { kind: "future-plan", title: "Showcase media", body: "Screenshots and a walkthrough video are pending; no media has been added until it is clearly mapped to this project.", displayOrder: 1 },
+    ],
+  },
+};
+
+export const fallbackProjects = (legacyPortfolio.projects as PortfolioProject[]).map((project) => ({
+  ...project,
+  ...showcaseFixtures[project.slug],
+}));
 
 export const fallbackPortfolio: PortfolioPayload = {
   domains: fallbackDomains,

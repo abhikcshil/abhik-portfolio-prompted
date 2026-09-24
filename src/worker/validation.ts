@@ -29,6 +29,12 @@ function optionalList(value: unknown) {
   return value.filter((item): item is string => typeof item === "string").map((item) => item.trim());
 }
 
+function optionalRecords(value: unknown) {
+  return Array.isArray(value)
+    ? value.filter((item): item is Record<string, unknown> => !!item && typeof item === "object")
+    : [];
+}
+
 function normalizeSlug(value: string) {
   const slug = value.trim().toLowerCase();
   if (!slugPattern.test(slug)) throw new Error("Slug must use lowercase letters, numbers, and hyphens.");
@@ -68,7 +74,11 @@ export function parseProjectInput(value: unknown): ProjectInput {
     title: requireString(value.title, "title"),
     shortDescription: optionalString(value.shortDescription) ?? "",
     description: optionalString(value.description) ?? "",
+    overview: optionalString(value.overview),
     status: optionalString(value.status) ?? "Draft",
+    lifecycle: optionalString(value.lifecycle),
+    role: optionalString(value.role),
+    teamSize: optionalString(value.teamSize),
     visibility: visibility as ProjectInput["visibility"],
     enabled: optionalBoolean(value.enabled),
     archived: optionalBoolean(value.archived),
@@ -77,12 +87,28 @@ export function parseProjectInput(value: unknown): ProjectInput {
     endDate: optionalString(value.endDate),
     techStack: optionalList(value.techStack),
     highlights: optionalList(value.highlights),
-    links: [],
-    visuals: [],
-    sections:
-      typeof value.description === "string" && value.description.trim()
-        ? [{ heading: "Overview", body: value.description.trim(), displayOrder: 1 }]
-        : [],
+    links: optionalRecords(value.links).flatMap((item, index) => {
+      const url = optionalString(item.url);
+      if (!url) return [];
+      return [{ label: optionalString(item.label) ?? "Link", url, linkType: (optionalString(item.linkType) ?? "other") as NonNullable<ProjectInput["links"]>[number]["linkType"], displayOrder: typeof item.displayOrder === "number" ? item.displayOrder : index + 1 }];
+    }),
+    visuals: optionalRecords(value.visuals).flatMap((item, index) => {
+      const url = optionalString(item.url);
+      if (!url) return [];
+      return [{ label: optionalString(item.label) ?? "", url, alt: optionalString(item.alt) ?? "", visualType: (optionalString(item.visualType) ?? "image") as NonNullable<ProjectInput["visuals"]>[number]["visualType"], featured: optionalBoolean(item.featured) ?? false, posterUrl: optionalString(item.posterUrl), provider: optionalString(item.provider), displayOrder: typeof item.displayOrder === "number" ? item.displayOrder : index + 1 }];
+    }),
+    sections: optionalRecords(value.sections).flatMap((item, index) => {
+      const body = optionalString(item.body);
+      if (!body) return [];
+      return [{ heading: optionalString(item.heading) ?? "Details", body, displayOrder: typeof item.displayOrder === "number" ? item.displayOrder : index + 1 }];
+    }),
+    caseStudyItems: optionalRecords(value.caseStudyItems).flatMap((item, index) => {
+      const title = optionalString(item.title);
+      if (!title) return [];
+      const kind = optionalString(item.kind);
+      if (!kind || !["feature", "challenge", "metric", "future-plan"].includes(kind)) return [];
+      return [{ kind: kind as NonNullable<ProjectInput["caseStudyItems"]>[number]["kind"], title, body: optionalString(item.body) ?? "", meta: optionalString(item.meta), displayOrder: typeof item.displayOrder === "number" ? item.displayOrder : index + 1 }];
+    }),
     placements: Array.isArray(value.placements)
       ? value.placements
           .filter((item): item is Record<string, unknown> => !!item && typeof item === "object")

@@ -70,6 +70,10 @@ Apply migrations remotely:
 npm run db:migrate:remote
 ```
 
+`0003_project_showcases.sql` adds project overview, lifecycle, role, team size,
+media metadata, and reusable case-study items. Run the migration before importing
+the updated fallback data.
+
 Import the legacy portfolio data remotely:
 
 ```bash
@@ -79,7 +83,7 @@ npm run db:seed:remote
 The importer reads `src/data/legacy-portfolio.json`, generates temporary SQL, and
 upserts records by stable slug. It replaces child records only for the 20 imported
 projects, so repeated runs do not duplicate placements, tech stack entries,
-highlights, links, visuals, or sections. It never hardcodes the remote D1 database
+highlights, links, visuals, sections, or case-study items. It never hardcodes the remote D1 database
 ID; Wrangler resolves `portfolio-db` through `wrangler.jsonc`.
 
 The normalized source was extracted from the database-backed public payload at

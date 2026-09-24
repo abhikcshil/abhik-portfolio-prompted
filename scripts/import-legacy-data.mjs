@@ -12,6 +12,22 @@ if (!mode) {
 
 const sourceUrl = "https://abhik-portfolio-pski.onrender.com/";
 const source = JSON.parse(await readFile(new URL("../src/data/legacy-portfolio.json", import.meta.url), "utf8"));
+const showcaseFixtures = {
+  antix: {
+    overview: "AnTix is an end-to-end ticketing platform built for the operational reality of live events, supporting purchase through check-in with QR delivery and organizer administration.",
+    lifecycle: "Production",
+    role: "Solo builder — product, frontend, backend, and event operations",
+    teamSize: "Independent project",
+    caseStudyItems: [
+      { kind: "feature", title: "Ticket fulfillment", body: "Verified payment completion creates tickets and triggers QR delivery with resend and recovery workflows.", displayOrder: 1 },
+      { kind: "feature", title: "Live check-in", body: "Mobile workflows validate QR tickets while protecting against duplicate scans and inconsistent entry state.", displayOrder: 2 },
+      { kind: "challenge", title: "Reliable checkout state", body: "Stripe webhooks, reservations, verification logic, and duplicate-webhook handling keep retries and network failures from producing duplicate fulfillment.", displayOrder: 1 },
+      { kind: "metric", title: "Live-event use", body: "Used by two organizers across five live events to sell and validate 500 tickets.", meta: "99% ticket-delivery rate reported through delivery logging and recovery tooling.", displayOrder: 1 },
+      { kind: "future-plan", title: "Showcase media", body: "Screenshots and a walkthrough video are pending; no media has been added until it is clearly mapped to this project.", displayOrder: 1 },
+    ],
+  },
+};
+source.projects = source.projects.map((project) => ({ ...project, ...showcaseFixtures[project.slug] }));
 const retiredPlaceholderSlugs = ["orbital-portfolio", "acs-studios-registry", "signal-sketches"];
 const q = (value) => value == null ? "NULL" : `'${String(value).replaceAll("'", "''")}'`;
 const b = (value) => value ? 1 : 0;
@@ -21,10 +37,10 @@ const sql = [];
 sql.push(`-- Generated from ${sourceUrl}`);
 sql.push("-- Safe to run repeatedly: natural keys are upserted and child rows are replaced per imported project.");
 sql.push(`INSERT INTO domains (id, slug, name, label, description, color_key, color_primary, color_secondary, orbit_order, enabled, visibility) VALUES\n${values(source.domains.map((domain) => [q(domain.id), q(domain.slug), q(domain.name), q(domain.label), q(domain.description), q(domain.colorKey), q(domain.colorPrimary), q(domain.colorSecondary), domain.orbitOrder, b(domain.enabled), q(domain.visibility)]))}\nON CONFLICT(slug) DO UPDATE SET name=excluded.name, label=excluded.label, description=excluded.description, color_key=excluded.color_key, color_primary=excluded.color_primary, color_secondary=excluded.color_secondary, orbit_order=excluded.orbit_order, enabled=excluded.enabled, visibility=excluded.visibility, updated_at=CURRENT_TIMESTAMP;`);
-sql.push(`INSERT INTO projects (id, slug, title, short_description, description, status, visibility, enabled, archived, featured, start_date, end_date) VALUES\n${values(source.projects.map((project) => [q(project.id), q(project.slug), q(project.title), q(project.shortDescription), q(project.description), q(project.status), q(project.visibility), b(project.enabled), b(project.archived), b(project.featured), q(project.startDate), q(project.endDate)]))}\nON CONFLICT(slug) DO UPDATE SET title=excluded.title, short_description=excluded.short_description, description=excluded.description, status=excluded.status, visibility=excluded.visibility, enabled=excluded.enabled, archived=excluded.archived, featured=excluded.featured, start_date=excluded.start_date, end_date=excluded.end_date, updated_at=CURRENT_TIMESTAMP;`);
+sql.push(`INSERT INTO projects (id, slug, title, short_description, description, overview, lifecycle, role, team_size, status, visibility, enabled, archived, featured, start_date, end_date) VALUES\n${values(source.projects.map((project) => [q(project.id), q(project.slug), q(project.title), q(project.shortDescription), q(project.description), q(project.overview ?? ""), q(project.lifecycle ?? ""), q(project.role ?? ""), q(project.teamSize), q(project.status), q(project.visibility), b(project.enabled), b(project.archived), b(project.featured), q(project.startDate), q(project.endDate)]))}\nON CONFLICT(slug) DO UPDATE SET title=excluded.title, short_description=excluded.short_description, description=excluded.description, overview=excluded.overview, lifecycle=excluded.lifecycle, role=excluded.role, team_size=excluded.team_size, status=excluded.status, visibility=excluded.visibility, enabled=excluded.enabled, archived=excluded.archived, featured=excluded.featured, start_date=excluded.start_date, end_date=excluded.end_date, updated_at=CURRENT_TIMESTAMP;`);
 
 const importedSlugs = source.projects.map((project) => q(project.slug)).join(", ");
-for (const table of ["project_domain_placements", "project_tech_stack", "project_highlights", "project_links", "project_sections", "project_visuals"]) {
+for (const table of ["project_domain_placements", "project_tech_stack", "project_highlights", "project_links", "project_sections", "project_visuals", "project_case_study_items"]) {
   sql.push(`DELETE FROM ${table} WHERE project_id IN (SELECT id FROM projects WHERE slug IN (${importedSlugs}));`);
 }
 
@@ -36,7 +52,8 @@ for (const project of source.projects) {
   project.highlights.forEach((text, index) => sql.push(`INSERT INTO project_highlights (id, project_id, text, display_order) SELECT ${q(`highlight-${project.slug}-${index + 1}`)}, id, ${q(text)}, ${index + 1} FROM projects WHERE slug=${q(project.slug)};`));
   project.links.forEach((link) => sql.push(`INSERT INTO project_links (id, project_id, label, url, link_type, display_order) SELECT ${q(`link-${project.slug}-${link.displayOrder}`)}, id, ${q(link.label)}, ${q(link.url)}, ${q(link.linkType)}, ${link.displayOrder} FROM projects WHERE slug=${q(project.slug)};`));
   project.sections.forEach((section) => sql.push(`INSERT INTO project_sections (id, project_id, heading, body, display_order) SELECT ${q(`section-${project.slug}-${section.displayOrder}`)}, id, ${q(section.heading)}, ${q(section.body)}, ${section.displayOrder} FROM projects WHERE slug=${q(project.slug)};`));
-  project.visuals.forEach((visual) => sql.push(`INSERT INTO project_visuals (id, project_id, label, url, alt, visual_type, display_order) SELECT ${q(`visual-${project.slug}-${visual.displayOrder}`)}, id, ${q(visual.label)}, ${q(visual.url)}, ${q(visual.alt)}, ${q(visual.visualType)}, ${visual.displayOrder} FROM projects WHERE slug=${q(project.slug)};`));
+  project.visuals.forEach((visual) => sql.push(`INSERT INTO project_visuals (id, project_id, label, url, alt, visual_type, featured, poster_url, provider, display_order) SELECT ${q(`visual-${project.slug}-${visual.displayOrder}`)}, id, ${q(visual.label)}, ${q(visual.url)}, ${q(visual.alt)}, ${q(visual.visualType)}, ${b(visual.featured)}, ${q(visual.posterUrl)}, ${q(visual.provider)}, ${visual.displayOrder} FROM projects WHERE slug=${q(project.slug)};`));
+  (project.caseStudyItems ?? []).forEach((item) => sql.push(`INSERT INTO project_case_study_items (id, project_id, item_kind, title, body, meta, display_order) SELECT ${q(`case-${project.slug}-${item.kind}-${item.displayOrder}`)}, id, ${q(item.kind)}, ${q(item.title)}, ${q(item.body)}, ${q(item.meta)}, ${item.displayOrder} FROM projects WHERE slug=${q(project.slug)};`));
 }
 
 sql.push(`UPDATE projects SET enabled=0, updated_at=CURRENT_TIMESTAMP WHERE slug IN (${retiredPlaceholderSlugs.map(q).join(", ")});`);
