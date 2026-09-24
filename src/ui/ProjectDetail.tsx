@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import type { CaseStudyItem, PortfolioProject, ProjectVisual } from "../data/portfolio";
 import { loadPublicProject } from "./api";
 
@@ -58,7 +58,9 @@ function MediaItem({ visual, onImageClick }: { visual: ProjectVisual; onImageCli
 export function ProjectDetail() {
   const { slug = "" } = useParams();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const [project, setProject] = useState<PortfolioProject | null | undefined>();
+  const [isReturning, setIsReturning] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -76,8 +78,8 @@ export function ProjectDetail() {
   const otherLinks = project.links.filter((link) => link !== liveLink);
   const features = (project.caseStudyItems ?? []).filter((item) => item.kind === "feature");
 
-  return <main className="detail-page">
-    <nav className="detail-nav" aria-label="Project navigation"><Link to={orbitHref}>← Back to {returnDomain ?? "portfolio"}</Link></nav>
+  return <main className={`detail-page ${location.state && (location.state as { projectTransition?: boolean }).projectTransition ? "project-detail-enter" : ""} ${isReturning ? "project-detail-leave" : ""}`}>
+    <nav className="detail-nav" aria-label="Project navigation"><ProjectBackLink to={orbitHref} label={returnDomain ?? "portfolio"} onLeaving={() => setIsReturning(true)} /></nav>
     <MediaCarousel visuals={project.visuals} />
     <header className="project-hero">
       <p className="eyebrow">{returnDomain ?? "Portfolio"} · {project.lifecycle || project.status}</p>
@@ -102,3 +104,34 @@ export function ProjectDetail() {
 function FeatureCard({ item }: { item: CaseStudyItem }) { return <article><h3>{item.title}</h3>{item.body && <p>{item.body}</p>}</article>; }
 function ArticleSection({ heading, children }: { heading: string; children: React.ReactNode }) { return <section className="article-section"><h2>{heading}</h2>{children}</section>; }
 function LinkList({ links }: { links: PortfolioProject["links"] }) { return <div className="link-row">{links.map((link) => <a key={`${link.url}-${link.label}`} href={link.url} target="_blank" rel="noreferrer">{link.label} <span aria-hidden="true">↗</span></a>)}</div>; }
+
+function ProjectBackLink({ to, label, onLeaving }: { to: string; label: string; onLeaving: () => void }) {
+  const navigate = useNavigate();
+  const [isLeaving, setIsLeaving] = useState(false);
+  const leavingRef = useRef(false);
+  const reducedMotion = useReducedMotion();
+  function goBack() {
+    if (leavingRef.current) return;
+    leavingRef.current = true;
+    if (reducedMotion) {
+      navigate(to, { state: { projectReturn: true } });
+      return;
+    }
+    setIsLeaving(true);
+    onLeaving();
+    window.setTimeout(() => navigate(to, { state: { projectReturn: true } }), 240);
+  }
+  return <button className={`project-back-link ${isLeaving ? "is-leaving" : ""}`} type="button" onClick={goBack}>← Back to {label}</button>;
+}
+
+function useReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReduced(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+  return reduced;
+}

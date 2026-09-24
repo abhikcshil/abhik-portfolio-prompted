@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   fallbackPortfolio,
   type PortfolioDomain,
@@ -18,6 +18,8 @@ export function Home() {
   const transitionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reducedMotion = useReducedMotion();
   const focusSlug = searchParams.get("focus");
+  const location = useLocation();
+  const returningFromProject = Boolean(location.state && (location.state as { projectReturn?: boolean }).projectReturn);
 
   useEffect(() => {
     let active = true;
@@ -130,6 +132,7 @@ export function Home() {
           domain={focused}
           projects={projectsByDomain.get(focused.slug) ?? []}
           isExiting={isExiting}
+          isReturningFromProject={returningFromProject}
           onBack={() => {
             if (isExiting) return;
             if (reducedMotion) {
@@ -158,20 +161,41 @@ function FocusedDomain({
   domain,
   projects,
   isExiting,
+  isReturningFromProject,
   onBack,
 }: {
   domain: PortfolioDomain;
   projects: PortfolioProject[];
   isExiting: boolean;
+  isReturningFromProject: boolean;
   onBack: () => void;
 }) {
   const navigate = useNavigate();
   const [preview, setPreview] = useState<PortfolioProject | null>(null);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [transitioningSlug, setTransitioningSlug] = useState<string | null>(null);
+  const transitionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const transitioningRef = useRef(false);
+  const reducedMotion = useReducedMotion();
+
+  useEffect(() => () => {
+    if (transitionTimer.current) clearTimeout(transitionTimer.current);
+  }, []);
 
   function activateProject(project: PortfolioProject) {
+    if (transitioningRef.current || transitioningSlug) return;
     if (selectedSlug === project.slug) {
-      navigate(`/project/${project.slug}?from=${encodeURIComponent(domain.slug)}`);
+      const destination = `/project/${project.slug}?from=${encodeURIComponent(domain.slug)}`;
+      if (reducedMotion) {
+        transitioningRef.current = true;
+        navigate(destination, { state: { projectTransition: true } });
+        return;
+      }
+      transitioningRef.current = true;
+      setTransitioningSlug(project.slug);
+      transitionTimer.current = setTimeout(() => {
+        navigate(destination, { state: { projectTransition: true } });
+      }, 460);
       return;
     }
     setSelectedSlug(project.slug);
@@ -179,7 +203,8 @@ function FocusedDomain({
   }
 
   return (
-    <section className={`focus-layout scene-camera ${isExiting ? "is-exiting" : ""}`}>
+    <section className={`focus-layout scene-camera ${isExiting ? "is-exiting" : ""} ${transitioningSlug ? "is-project-transitioning" : ""} ${isReturningFromProject ? "is-project-return" : ""}`}>
+      {transitioningSlug && <div className="project-scene-wash" aria-hidden="true" style={{ "--primary": domain.colorPrimary } as React.CSSProperties} />}
       <div className="focus-stage" aria-label={`${domain.name} projects`}>
         <button className="back-button" type="button" onClick={onBack}>
           Back
@@ -204,7 +229,7 @@ function FocusedDomain({
             <button
               key={project.slug}
               type="button"
-              className={`moon-orbit ${order % 2 === 0 ? "callout-down" : ""} ${isSelected ? "is-selected" : ""}`}
+              className={`moon-orbit ${order % 2 === 0 ? "callout-down" : ""} ${isSelected ? "is-selected" : ""} ${transitioningSlug === project.slug ? "is-transitioning" : ""}`}
               onClick={() => activateProject(project)}
               onMouseEnter={() => setPreview(project)}
               onFocus={() => setPreview(project)}
