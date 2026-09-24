@@ -26,6 +26,12 @@
     "role": "Full-stack product implementation across buyer, organizer, door-staff, and operator workflows",
     "techStack": ["React", "TypeScript", "Vite", "Cloudflare Pages Functions", "Cloudflare D1", "Cloudflare R2", "Stripe", "Resend", "html5-qrcode"],
     "links": [{ "label": "Live site", "url": "https://antix.acsstudios.co", "linkType": "live", "displayOrder": 1 }],
+    "visuals": [
+      { "label": "Temporary abstract carousel placeholder 01", "url": "/showcase-placeholders/placeholder-blue-01.svg", "alt": "Temporary abstract blue project image placeholder for carousel testing", "visualType": "image", "featured": true, "displayOrder": 1 },
+      { "label": "Temporary abstract carousel placeholder 02", "url": "/showcase-placeholders/placeholder-purple-02.svg", "alt": "Temporary abstract purple project image placeholder for carousel testing", "visualType": "image", "displayOrder": 2 },
+      { "label": "Temporary abstract carousel placeholder 03", "url": "/showcase-placeholders/placeholder-cyan-03.svg", "alt": "Temporary abstract cyan project image placeholder for carousel testing", "visualType": "image", "displayOrder": 3 },
+      { "label": "Temporary abstract carousel placeholder 04", "url": "/showcase-placeholders/placeholder-lavender-04.svg", "alt": "Temporary abstract lavender project image placeholder for carousel testing", "visualType": "image", "displayOrder": 4 }
+    ],
     "sections": [
       { "heading": "Technical architecture", "body": "A React/Vite application serves public, organizer, scanner, and owner experiences through Cloudflare Pages Functions. D1 stores users, roles, events, ticket tiers, promotions, checkout state, orders, tickets, delivery logs, and scans; R2 stores event flyers. Stripe Checkout collects payment, signed webhooks trigger fulfillment, and Resend delivers QR tickets.", "displayOrder": 1 },
       { "heading": "Reliability & security", "body": "Server-authoritative inventory and promotion checks run before checkout. Webhook signature validation, reservation expiry, idempotent fulfillment, unique ticket codes, delivery cooldowns, audit history, and event-scoped scanner permissions protect the payment-to-admission flow. Ticket pages expose only the event, tier, and status—not buyer identity or provider identifiers.", "displayOrder": 2 },
@@ -47,6 +53,11 @@
     "overview": "SoulFrame combines a mobile-first owner dashboard, a FastAPI backend, and a Raspberry Pi device agent for remotely managed motion-art displays. Users upload media, create playlists, assign content to frames, pair devices with QR codes, and observe runtime telemetry. The device caches normalized media locally so playback can continue when the network drops.",
     "lifecycle": "Active Development",
     "techStack": ["React", "TypeScript", "Vite", "FastAPI", "SQLAlchemy", "SQLite", "PostgreSQL", "FFmpeg", "MPV", "Raspberry Pi", "systemd"],
+    "visuals": [
+      { "label": "Temporary abstract carousel placeholder 01", "url": "/showcase-placeholders/placeholder-cyan-03.svg", "alt": "Temporary abstract cyan project image placeholder for carousel testing", "visualType": "image", "featured": true, "displayOrder": 1 },
+      { "label": "Temporary abstract carousel placeholder 02", "url": "/showcase-placeholders/placeholder-lavender-04.svg", "alt": "Temporary abstract lavender project image placeholder for carousel testing", "visualType": "image", "displayOrder": 2 },
+      { "label": "Temporary abstract carousel placeholder 03", "url": "/showcase-placeholders/placeholder-blue-01.svg", "alt": "Temporary abstract blue project image placeholder for carousel testing", "visualType": "image", "displayOrder": 3 }
+    ],
     "sections": [
       { "heading": "Technical architecture", "body": "The React dashboard communicates with FastAPI services secured by user JWTs, while devices use a separate token boundary. SQLAlchemy models users, devices, media, playlists, assignments, runtime state, and commands. Uploaded media is normalized with FFmpeg, then the Pi agent polls for revisions and commands, downloads assigned media with ETag support, caches it by checksum, and plays it fullscreen through MPV.", "displayOrder": 1 },
       { "heading": "Reliability & device operations", "body": "Only ready normalized media is delivered to a device. Revisions, checksums, command expiry and acknowledgements, explicit device states, automatic reconnect behavior, and cached offline playback make the frame observable and usable through intermittent connectivity.", "displayOrder": 2 },
